@@ -1849,6 +1849,13 @@
           if (!this.isDrawing) return;
           e.preventDefault();
           this.isDrawing = false;
+          // Pointer cancellation is not a completed writing attempt.
+          if (e.type === 'pointercancel') {
+            this.layerUser.innerHTML = '';
+            this.userPoints = [];
+            this.nextCheckpointIdx = 0;
+            return;
+          }
           this.evaluateStrokeAttempt();
         };
 
@@ -2771,6 +2778,28 @@
         const correctAssoc = assocQ.choices.find(c => c.id === sampleLetter.id);
         assert('نشاط أنا أربط: تطابق الحرف مع الكلمة والصورة التعليمية',
           Boolean(correctAssoc && correctAssoc.word && correctAssoc.svg.includes('<svg')));
+
+        // Regression checks for writing completion and short-dot interaction.
+        const savedWritingItem = WritingEngine.currentItem;
+        const savedWritingIndex = WritingEngine.currentStrokeIdx;
+        const savedWritingLevel = WritingEngine.currentLevel;
+        try {
+          const dotStroke = ContentRepository.letters[1].strokes[1];
+          const dotPoints = WritingEngine.buildCheckpoints(dotStroke.points);
+          assert('النقطة القصيرة: يمكن تغطية المسار بنقرة واحدة',
+            dotPoints.length <= 3 && dotPoints.every(pt => WritingEngine.distance(pt, dotPoints[0]) <= 22));
+          WritingEngine.currentItem = ContentRepository.letters[1];
+          WritingEngine.currentStrokeIdx = WritingEngine.currentItem.strokes.length;
+          WritingEngine.currentLevel = 1;
+          WritingEngine.renderReferenceLayers();
+          assert('إكمال آخر مسار: لا يحدث خطأ عند انتهاء الكتابة', true);
+        } catch (e) {
+          assert('إكمال آخر مسار: لا يحدث خطأ عند انتهاء الكتابة', false);
+        } finally {
+          WritingEngine.currentItem = savedWritingItem;
+          WritingEngine.currentStrokeIdx = savedWritingIndex;
+          WritingEngine.currentLevel = savedWritingLevel;
+        }
 
         const alif = ContentRepository.letters[0];
         const checkpoints = WritingEngine.buildCheckpoints(alif.strokes[0].points);
