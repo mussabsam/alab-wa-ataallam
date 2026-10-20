@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "voice": {
+    "language": "ar-SA",
+    "style": "female-warm-gentle",
+    "description": "صوت نسائي حنون، عربي فصيح، نطق تعليمي واضح دون موسيقى"
+  },
+  "clips": {
+    "أَ": "assets/audio/letters/alif_fatha.mp3",
+    "بَ": "assets/audio/letters/baa_fatha.mp3",
+    "أحسنت يا بطل!": "assets/audio/encouragement/well_done.mp3"
+  }
+}
